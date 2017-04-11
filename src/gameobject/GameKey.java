@@ -7,7 +7,7 @@ import javax.swing.ImageIcon;
 
 public class GameKey extends GameObject {
 
-    int gameKeyNumber;
+    private int gameKeyNumber;
 
     public GameKey(int gameKeyNumber) {
         ImageIcon icon = new ImageIcon("images/gamekey.png");
@@ -19,6 +19,11 @@ public class GameKey extends GameObject {
 
     public int getGameKeyPin(){
         return this.gameKeyNumber;
+    }
+
+    @Override
+    public boolean canMoveTo() {
+        return true;
     }
 
     @Override
