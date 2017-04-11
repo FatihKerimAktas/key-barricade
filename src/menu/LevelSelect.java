@@ -3,123 +3,92 @@ package menu;
 import game.PlayGround;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import menu.MainMenu;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.*;
 
 public class LevelSelect {
 
-    public static int levelNumber = 0;
-    public static String levelchoice;
+    private static int currentLevel = 0;
+    private static int totalLevels = 0;
+    private static String levelName;
 
-    public static void setupLevelSelect() {
-        JFrame lvlSelect = new JFrame("Sleutel Barricade");
-        lvlSelect.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    void setupLevelSelect() {
+        File folder = new File("levels");
+        File[] listOfFiles = folder.listFiles();
 
-        JButton[] levelButton = new JButton[6];
-        levelButton[0] = new JButton("Level1");
-        levelButton[1] = new JButton("Level2");
-        levelButton[2] = new JButton("Level3");
-        levelButton[3] = new JButton("Level4");
-        levelButton[4] = new JButton("Level5");
-        levelButton[5] = new JButton("Back");
+        JFrame lvlSelect = new JFrame("Key Barricade");
+        lvlSelect.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        for (JButton levelButtons : levelButton) {
-            lvlSelect.add(levelButtons);
+        // Get all file names; e.g. level2
+        List<String> list = new ArrayList<>();
+        // TODO: Check if the if this if-statement is needed
+        if(listOfFiles != null) {
+            for (File listOfFile : listOfFiles) {
+                String fileName = listOfFile.toString();
+                list.add(fileName.substring(7, fileName.length() - 4));
+                totalLevels = Integer.parseInt(fileName.substring(12, fileName.length() - 4));
+            }
+            Collections.sort(list);
+
+            JButton[] levelButton = new JButton[listOfFiles.length];
+            for (int i = 0; i < levelButton.length; i++) {
+                levelButton[i] = new JButton(list.get(i));
+            }
+
+            for (JButton levelButtons : levelButton) {
+                lvlSelect.add(levelButtons);
+            }
+
+            int buttonLocationX = 250;
+            int buttonLocationY = 100;
+
+            int buttonSizeX = 100;
+            int buttonSizeY = 75;
+
+            JLabel emptyLabel = new JLabel("");
+            emptyLabel.setPreferredSize(new Dimension(600, 650));
+            lvlSelect.getContentPane().add(emptyLabel, BorderLayout.CENTER);
+
+            for (JButton b : levelButton) {
+                b.setSize(buttonSizeX, buttonSizeY);
+                b.setLocation(buttonLocationX, buttonLocationY);
+                buttonLocationY += 100;
+
+                b.addActionListener(e -> {
+                    currentLevel = Integer.parseInt(b.getText().substring(5));
+                    levelName =  b.getText();
+                    PlayGround.setupPlayGround();
+                    lvlSelect.setVisible(false);
+                });
+            }
         }
-
-        int buttinLocationX = 250;
-        levelButton[0].setLocation(buttinLocationX, 125);
-        levelButton[1].setLocation(buttinLocationX, 225);
-        levelButton[2].setLocation(buttinLocationX, 325);
-        levelButton[3].setLocation(buttinLocationX, 425);
-        levelButton[4].setLocation(buttinLocationX, 525);
-        levelButton[5].setLocation(buttinLocationX + 150, 325);
-
-        int buttonSizeX = 100;
-        int buttonSizeY = 75;
-        levelButton[0].setSize(buttonSizeX, buttonSizeY);
-        levelButton[1].setSize(buttonSizeX, buttonSizeY);
-        levelButton[2].setSize(buttonSizeX, buttonSizeY);
-        levelButton[3].setSize(buttonSizeX, buttonSizeY);
-        levelButton[4].setSize(buttonSizeX, buttonSizeY);
-        levelButton[5].setSize(buttonSizeX, buttonSizeY);
-
-        JLabel emptyLabel = new JLabel("");
-
-        emptyLabel.setPreferredSize(new Dimension(600, 650));
-
-        lvlSelect.getContentPane().add(emptyLabel, BorderLayout.CENTER);
-
-        // Level 1
-        levelButton[0].addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                levelNumber = 1;
-                levelchoice = "levels/level" + levelNumber;
-                PlayGround.setupPlayGround();
-                lvlSelect.setVisible(false);
-            }
-        });
-
-        // Level 2
-        levelButton[1].addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                levelNumber = 2;
-                levelchoice = "levels/level" + levelNumber;
-                PlayGround.setupPlayGround();
-                lvlSelect.setVisible(false);
-            }
-        });
-
-        // Level 3
-        levelButton[2].addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                levelNumber = 3;
-                levelchoice = "levels/level" + levelNumber;
-                PlayGround.setupPlayGround();
-                lvlSelect.setVisible(false);
-            }
-        });
-
-        // Level 4
-        levelButton[3].addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                levelNumber = 4;
-                levelchoice = "levels/level" + levelNumber;
-                PlayGround.setupPlayGround();
-                lvlSelect.setVisible(false);
-            }
-        });
-
-        // Level 5
-        levelButton[4].addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                levelNumber = 5;
-                levelchoice = "levels/level" + levelNumber;
-                PlayGround.setupPlayGround();
-                lvlSelect.setVisible(false);
-            }
-        });
-
-        // Back
-        levelButton[5].addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MainMenu.create_mainmenu();
-                lvlSelect.setVisible(false);
-            }
-        });
 
         lvlSelect.pack();
         lvlSelect.setVisible(true);
         lvlSelect.setLocationRelativeTo(null);
     }
+
+    public static int getTotalLevels() {
+        return totalLevels;
+    }
+
+    public static String getLevelName() {
+        return levelName;
+    }
+
+    public static void setLevelName(String levelName) {
+        LevelSelect.levelName = levelName;
+    }
+
+    public static int getCurrentLevel() {
+        return currentLevel;
+    }
+
+    public static void setCurrentLevel(int currentLevel) {
+        LevelSelect.currentLevel = currentLevel;
+    }
+
 }
