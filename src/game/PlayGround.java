@@ -4,24 +4,18 @@ import gameobject.Barricade;
 import gameobject.GameKey;
 import gameobject.Wall;
 import player.Player;
-import gameobject.GameObject;
 import menu.LevelSelect;
-import static menu.LevelSelect.levelNumber;
 import tile.EndTile;
 import tile.Tile;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -32,11 +26,15 @@ import menu.MainMenu;
 
 public class PlayGround extends JComponent {
 
-    public Player player;
-    public List<GameObject> gameObject = new ArrayList<>();         // gameObjects are in 1 list now
-    public Tile[][] tiles;                                          // Tiles are stored in a 2D Array
+    private Player player;
+    //public List<GameObject> gameObject = new ArrayList<>();         // gameObjects are in 1 list now
+    private Tile[][] tiles;                                          // Tiles are stored in a 2D Array
 
-    public PlayGround() {
+    public Tile[][] getTiles() {
+        return this.tiles;
+    }
+
+    private PlayGround() {
         setFocusable(true);
         addKeyListener(new SelectionListener());
         setupGame();
@@ -44,15 +42,15 @@ public class PlayGround extends JComponent {
                 tiles.length * Tile.ICON_HEIGHT + Tile.BOARD_Y_OFFSET * 2));
     }
 
-    public void setupGame() {
+    private void setupGame() {
 
-        String fileName = LevelSelect.levelchoice + ".txt";
+        String fileName = "levels/" + LevelSelect.getLevelName() + ".txt";
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             // If the file unreachable or the game is 'broke' it will not directly store it into this.tiles
             Tile[][] tiles = null; // Array to store the level into.
             int x = 0;  // The current x position.
             int y = 0;  // The current y position.
-            int size = 0; // The size of the playfield (grid).
+            int size = 0; // The size of the playground (grid).
 
             String line = null;
             while ((line = bufferedReader.readLine()) != null) { // Read each line of the file.
@@ -99,7 +97,7 @@ public class PlayGround extends JComponent {
                                 tile.setGameObject(new GameKey(gameKeyNumber)); // Set the gameObject to GameKey with the keyNumber from the parsed String
                                 tiles[x][y] = tile; // Store it in the current x,y position in tiles
                             } else if (s.startsWith("BARRICADE")) { // "BARRICADE",,,
-                                int barricadeNumber = Integer.parseInt(s.substring(9)); // Future use.
+                                int barricadeNumber = Integer.parseInt(s.substring(9)); // Get the text(number) after the word 'BARRICADE'
                                 Tile tile = new Tile(x, y); // Create a Tile...
                                 tile.setGameObject(new Barricade(barricadeNumber)); // Set the gameObject to Barricade with the barricadeNumber from the parsed String
                                 tiles[x][y] = tile; // Store it in the current x,y position in tiles
@@ -113,7 +111,7 @@ public class PlayGround extends JComponent {
                 }
                 y++; // Increment the y position.
             }
-            this.tiles = tiles; // Level loaded, set the loaded tiles to this.tiles.
+            this.tiles = tiles; // Level loaded; set the loaded tiles to this.tiles.
         } catch (FileNotFoundException ex) {
             System.out.println("Unable to open file '" + fileName + "'");
         } catch (IOException ex) {
@@ -162,6 +160,7 @@ public class PlayGround extends JComponent {
                 case "U":
                     Tile currentPos = null;
 
+                    // TODO FIX: if player is end of the map, it gives an error
                     if (player.current == player.playerUp) {
                         currentPos = getTile(player.getX(), player.getY() - 1);
                     } else if (player.current == player.playerDown) {
@@ -171,6 +170,7 @@ public class PlayGround extends JComponent {
                     } else if (player.current == player.playerRight) {
                         currentPos = getTile(player.getX() + 1, player.getY());
                     }
+
                     if (currentPos.getGameObject() != null && currentPos.getGameObject() instanceof Barricade) {
                         Barricade barricade = (Barricade) currentPos.getGameObject();   // cast gameObject to Barricade
                         if (player.getKeyPinPickedUp() == barricade.getBarricadePin()) { // If the GamePin equals to the BarricadePin
@@ -178,7 +178,7 @@ public class PlayGround extends JComponent {
                         } else {
                             JFrame popUp = new JFrame();
                             popUp.setTitle("Key Barricade");
-                            JLabel textlevel = new JLabel("Verkeerde Sleutel!");
+                            JLabel textlevel = new JLabel("Wrong key!");
 
                             popUp.add(textlevel);
                             textlevel.setLocation (100,100);
@@ -223,7 +223,9 @@ public class PlayGround extends JComponent {
         frame.setLayout(new BorderLayout());
 
         JPanel panel = new JPanel();
-        JLabel textlevel = new JLabel(LevelSelect.levelchoice);
+//        LevelSelect l = new LevelSelect();
+        JLabel textlevel = new JLabel(LevelSelect.getLevelName());
+//        JLabel textlevel = new JLabel(LevelSelect.levelName);
         JButton retry = new JButton("Restart");
         JButton mainMenu = new JButton("Main menu");
         JButton nextLevel = new JButton("Next level");
@@ -235,42 +237,41 @@ public class PlayGround extends JComponent {
         panel.add(nextLevel);
         panel.add(prevLevel);
 
-        retry.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        retry.addActionListener(e -> {
+            frame.setVisible(false);
+            PlayGround.setupPlayGround();
+        });
+
+        mainMenu.addActionListener(e -> {
+            frame.setVisible(false);
+            MainMenu.create_mainmenu();
+        });
+
+        nextLevel.addActionListener(e -> {
+            if (LevelSelect.getCurrentLevel() < LevelSelect.getTotalLevels() && LevelSelect.getCurrentLevel() > 0) {
+                String levelText = LevelSelect.getLevelName().substring(0, LevelSelect.getLevelName().length()-1);
+                int levelNumber = LevelSelect.getCurrentLevel() + 1;
+
+
+                LevelSelect.setLevelName(levelText + levelNumber);
+                LevelSelect.setCurrentLevel(levelNumber);
+
                 frame.setVisible(false);
                 PlayGround.setupPlayGround();
             }
         });
 
-        mainMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.setVisible(false);
-                MainMenu.create_mainmenu();
-            }
-        });
+        prevLevel.addActionListener(e -> {
+            if (LevelSelect.getCurrentLevel() > 1) {
 
-        nextLevel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (levelNumber < 5 && levelNumber > 0) {
-                    levelNumber = levelNumber + 1;
-                    LevelSelect.levelchoice = "level" + levelNumber;
-                    frame.setVisible(false);
-                    PlayGround.setupPlayGround();
-                }
-            }
-        });
-        prevLevel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (levelNumber > 1) {
-                    levelNumber = levelNumber - 1;
-                    LevelSelect.levelchoice = "level" + levelNumber;
-                    frame.setVisible(false);
-                    PlayGround.setupPlayGround();
-                }
+                String levelText = LevelSelect.getLevelName().substring(0, LevelSelect.getLevelName().length()-1);
+                int levelNumber = LevelSelect.getCurrentLevel() - 1;
+
+                LevelSelect.setLevelName(levelText + levelNumber);
+                LevelSelect.setCurrentLevel(levelNumber);
+
+                frame.setVisible(false);
+                PlayGround.setupPlayGround();
             }
         });
 
