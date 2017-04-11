@@ -5,13 +5,11 @@ import java.awt.Image;
 
 public abstract class GameObject {
 
-    public Image icon;
+    private Image icon;
 
-    public boolean canMoveTo() {
-        return true;
-    }
+    public abstract boolean canMoveTo();
 
-    public void setGameObjectIcon(Image iconI) {
+    void setGameObjectIcon(Image iconI) {
         this.icon = iconI;
     }
 
