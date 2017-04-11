@@ -18,10 +18,10 @@ public class Tile {
     public int x;
     public int y;
 
-    public Color color = Color.GRAY;
+    private Color color = Color.GRAY;
 
-    public GameObject go;
-    public Player player;
+    private GameObject go;
+    private Player player;
 
     public Tile(int x, int y) {
         this.x = x;
@@ -33,16 +33,17 @@ public class Tile {
         return x;
     }
 
+    // Get the 'Tile' Y coordinate.
     public int getY() {
         return y;
     }
 
     // Get the Screen X coordinate.
-    public int getScreenX() {
+    private int getScreenX() {
         return BOARD_X_OFFSET + x * ICON_WIDTH;
     }
 
-    public int getScreenY() {
+    private int getScreenY() {
         return BOARD_Y_OFFSET + y * ICON_HEIGHT;
     }
 
@@ -54,7 +55,7 @@ public class Tile {
         return this.go;
     }
 
-    public void setColor(Color c) {
+    void setColor(Color c) {
         this.color = c;
     }
 
